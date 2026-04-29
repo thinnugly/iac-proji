@@ -1,5 +1,5 @@
 region = "us-east-1"
-role = "GitHubRunnerTerraformRole"
+role = "ec2-instance-role"
 iam_instance_profile = "ec2-iam-instace-profile"
 vpc_id = "vpc-0431d6cdd71fbae80"
 security_group = "proji-sg"
