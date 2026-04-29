@@ -1,0 +1,11 @@
+region = "us-east-1"
+role = "ec2-role"
+iam_instance_profile = "ec2-iam-instace-profile"
+vpc_id = "vpc-0431d6cdd71fbae80"
+security_group = "proji-sg"
+repository_name = "proji-repository"
+image_tag_mutability = "MUTABLE"
+instance_count = 1
+ami = "ami-05cf1e9f73fbad2e2"
+instance_type = "t3.micro"
+ec2_role = "proji-ec2-role"
