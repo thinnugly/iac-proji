@@ -29,15 +29,30 @@ jobs:
       - name: Verify AWS identity
         run: aws sts get-caller-identity
 
-      - name: Install Ansible and AWS collection
+      - name: Install AWS dependencies and collection
         run: |
-          sudo apt update
-          sudo apt install -y ansible
-          ansible-galaxy collection install amazon.aws
+          pipx inject ansible-core boto3 botocore
+          ansible-galaxy collection install amazon.aws community.aws
+      - name: Wait for EC2 instances to register in SSM
+        run: |
+          echo "Waiting for EC2 instances to become available in AWS SSM..."
 
-      - name: Wait for EC2 + SSM readiness
-        run: sleep 90
+          for i in {1..30}; do
+            INSTANCE_COUNT=$(aws ssm describe-instance-information \
+              --query "InstanceInformationList[*].InstanceId" \
+              --output text | wc -w)
 
+            if [ "$INSTANCE_COUNT" -gt 0 ]; then
+              echo "EC2 instance registered in SSM."
+              exit 0
+            fi
+
+            echo "Still waiting for SSM registration..."
+            sleep 10
+          done
+
+          echo "Timeout waiting for EC2 instances in SSM."
+          exit 1
       - name: Validate inventory
         run: ansible-inventory -i inventory/aws_ec2.yml --graph
 
