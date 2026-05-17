@@ -25,8 +25,6 @@ jobs:
   plan:
     name: Terraform Plan
     runs-on: ubuntu-latest
-    if: ${{ inputs.action != 'destroy' }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,6 +37,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
 
       - name: Terraform Init
         run: terraform init -backend-config=../../global/backend/backend.hcl
@@ -50,24 +50,24 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan.tfout
-
-      - name: Export Terraform Outputs
-        run: terraform output -json > outputs.json
+        run: |
+          if [ "${{ github.event.inputs.action }}" = "destroy" ]; then
+            terraform plan -destroy -out=tfplan.tfout -input=false
+          else
+            terraform plan -out=tfplan.tfout -input=false
+          fi
 
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: |
-            terraform/environments/prod/tfplan.tfout
-            terraform/environments/prod/outputs.json
+          path: terraform/environments/prod/tfplan.tfout
 
   apply:
     name: Terraform Apply
     needs: plan
     runs-on: ubuntu-latest
-    if: ${{ inputs.action == 'apply' }}
+    if: ${{ github.event.inputs.action == 'apply' }}
     environment: production
 
     steps:
@@ -88,12 +88,24 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
 
       - name: Terraform Init
         run: terraform init -backend-config=../../global/backend/backend.hcl
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan.tfout
+        timeout-minutes: 30
+
+      - name: Export Terraform Outputs
+        run: terraform output -json > outputs.json
+
+      - name: Upload Outputs Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfoutputs
+          path: terraform/environments/prod/outputs.json
 
       - name: Trigger Ansible Pipeline
         uses: actions/github-script@v7
@@ -108,13 +120,20 @@ jobs:
 
   destroy:
     name: Terraform Destroy
+    needs: plan 
     runs-on: ubuntu-latest
-    if: ${{ inputs.action == 'destroy' }}
+    if: ${{ github.event.inputs.action == 'destroy' }}
     environment: production
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/environments/prod
 
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -124,9 +143,12 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
 
       - name: Terraform Init
         run: terraform init -backend-config=../../global/backend/backend.hcl
 
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve
+      # Aplica o plano de destruição de forma totalmente controlada e segura
+      - name: Terraform Destroy (Apply Destroy Plan)
+        run: terraform apply -auto-approve tfplan.tfout
