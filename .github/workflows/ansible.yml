@@ -33,6 +33,12 @@ jobs:
         run: |
           pipx inject ansible-core boto3 botocore
           ansible-galaxy collection install amazon.aws community.aws
+
+      - name: Install AWS Session Manager Plugin
+        run: |
+          curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
+          sudo dpkg -i session-manager-plugin.deb
+
       - name: Wait for EC2 instances to register in SSM
         run: |
           echo "Waiting for EC2 instances to become available in AWS SSM..."
@@ -53,6 +59,7 @@ jobs:
 
           echo "Timeout waiting for EC2 instances in SSM."
           exit 1
+
       - name: Validate inventory
         run: ansible-inventory -i inventory/aws_ec2.yml --graph
 
