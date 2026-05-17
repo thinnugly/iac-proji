@@ -1,0 +1,60 @@
+---
+- name: Configurar EC2 - Ambiente de Produção (Docker + App)
+  hosts: all
+  gather_facts: true
+  become: true
+
+  vars:
+    app_user: "{{ ansible_user }}"
+    app_path: "/home/{{ ansible_user }}/app"
+
+  tasks:
+    - name: Atualizar cache do apt e sistema
+      apt:
+        update_cache: yes
+        upgrade: dist
+        force_apt_get: yes
+
+    - name: Instalar dependências base
+      apt:
+        name:
+          - docker.io
+          - docker-compose-v2
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Garantir que Docker está instalado corretamente
+      command: docker --version
+      register: docker_check
+      changed_when: false
+
+    - name: Iniciar e habilitar Docker
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+      notify: Restart Docker
+
+    - name: Adicionar utilizador ao grupo docker
+      user:
+        name: "{{ app_user }}"
+        groups: docker
+        append: yes
+
+    - name: Atualizar sessão para aplicar grupo docker
+      meta: reset_connection
+
+    - name: Criar diretório da aplicação
+      file:
+        path: "{{ app_path }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0755"
+
+  handlers:
+    - name: Restart Docker
+      systemd:
+        name: docker
+        state: restarted
