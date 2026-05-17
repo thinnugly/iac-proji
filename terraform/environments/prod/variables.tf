@@ -1,43 +1,21 @@
-variable "region" {
-  
-}
+variable "region" {}
 
-variable "role" {
-  
-}
+variable "role" {}
 
-variable "iam_instance_profile" {
-  
-}
+variable "iam_instance_profile" {}
 
-variable "vpc_id" {
-  
-}
+variable "vpc_id" {}
 
-variable "security_group" {
-  
-}
+variable "security_group" {}
 
-variable "repository_name" {
-  
-}
+variable "repository_name" {}
 
-variable "image_tag_mutability" {
-  
-}
+variable "image_tag_mutability" {}
 
-variable "instance_count" {
-  
-}
+variable "instance_count" {}
 
-variable "ami" {
-  
-}
+variable "ami" {}
 
-variable "instance_type" {
-  
-}
+variable "instance_type" {}
 
-variable "ec2_role" {
-  
-}
+variable "ec2_role" {}
