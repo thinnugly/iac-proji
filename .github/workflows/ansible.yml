@@ -1,10 +1,6 @@
 name: Ansible CI/CD
 
 on:
-  workflow_run:
-    workflows: ["Terraform CI/CD"]
-    types:
-      - completed
   workflow_dispatch:
 
 permissions:
@@ -17,12 +13,11 @@ defaults:
 
 jobs:
   ansible:
+    name: Ansible Configuration (SSM)
     runs-on: ubuntu-latest
 
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configure AWS Credentials (OIDC)
@@ -34,11 +29,17 @@ jobs:
       - name: Verify AWS identity
         run: aws sts get-caller-identity
 
-      - name: Install Ansible + AWS Collection
+      - name: Install Ansible and AWS collection
         run: |
           sudo apt update
           sudo apt install -y ansible
           ansible-galaxy collection install amazon.aws
 
-      - name: Run Ansible Playbook (EC2 via SSM)
+      - name: Wait for EC2 + SSM readiness
+        run: sleep 90
+
+      - name: Validate inventory
+        run: ansible-inventory -i inventory/aws_ec2.yml --graph
+
+      - name: Run Ansible Playbook via SSM
         run: ansible-playbook -i inventory/aws_ec2.yml playbook.yml -vv
