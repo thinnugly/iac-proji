@@ -61,7 +61,7 @@ jobs:
           exit 1
 
       - name: Validate inventory
-        run: ansible-inventory -i inventory/aws_ec2.yml --graph
+        run: ansible-inventory -i inventories/aws_ec2.yml --graph
 
       - name: Run Ansible Playbook via SSM
-        run: ansible-playbook -i inventory/aws_ec2.yml playbooks/setup_docker.yml -vv
+        run: ansible-playbook -i inventories/aws_ec2.yml playbooks/setup_docker.yml -vv
