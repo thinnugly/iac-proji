@@ -1,2 +1,3 @@
+.vscode
 terraform/environments/prod/.terraform
 terraform/environments/prod/.terraform.lock.hcl

@@ -1,53 +1,10 @@
----
-- name: Configurar EC2 - Ambiente de Produção (Docker + App)
+- name: Testar conexão via SSM
   hosts: all
-  gather_facts: true
-  become: true
-
-  vars:
-    app_user: "{{ ansible_user }}"
-    app_path: "/home/{{ ansible_user }}/app"
-
+  gather_facts: false
   tasks:
-    - name: Atualizar cache do apt e sistema
-      apt:
-        update_cache: yes
-        upgrade: dist
+    - name: Ping via SSM
+      ansible.builtin.ping:
 
-    - name: Instalar dependências base
-      apt:
-        name:
-          - docker.io
-          - docker-compose-v2
-          - python3-pip
-        state: present
-        update_cache: yes
-
-    - name: Garantir que Docker está iniciado e habilitado
-      systemd:
-        name: docker
-        state: started
-        enabled: true
-
-    - name: Validar instalação do Docker
-      command: docker --version
-      register: docker_check
-      changed_when: false
-
-    - name: Mostrar versão do Docker
-      debug:
-        var: docker_check.stdout
-
-    - name: Adicionar utilizador ao grupo docker
-      user:
-        name: "{{ app_user }}"
-        groups: docker
-        append: yes
-
-    - name: Criar diretório da aplicação
-      file:
-        path: "{{ app_path }}"
-        state: directory
-        owner: "{{ app_user }}"
-        group: "{{ app_user }}"
-        mode: "0755"
+    - name: Mostrar ID da instância
+      ansible.builtin.debug:
+        msg: "Conectado à instância {{ inventory_hostname }}"
