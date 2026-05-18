@@ -1,5 +1,7 @@
 name: Ansible CI/CD
 
+# on:
+#   workflow_dispatch:
 on:
   workflow_dispatch:
 
@@ -32,7 +34,7 @@ jobs:
       - name: Install AWS dependencies and collection
         run: |
           pipx inject ansible-core boto3 botocore
-          ansible-galaxy collection install amazon.aws community.aws
+          ansible-galaxy collection install amazon.aws community.aws --force
 
       - name: Install AWS Session Manager Plugin
         run: |
@@ -63,5 +65,7 @@ jobs:
       - name: Validate inventory
         run: ansible-inventory -i inventories/aws_ec2.yml --graph
 
-      - name: Run Ansible Playbook via SSM
-        run: ansible-playbook -i inventories/aws_ec2.yml playbooks/setup_docker.yml -vv
+      - name: Run Ansible Ping via SSM
+        run: ansible -i inventories/aws_ec2.yml all -m ping -vvv
+      # - name: Run Ansible Playbook via SSM
+      #   run: ansible-playbook -i inventories/aws_ec2.yml playbooks/setup_docker.yml -vv
