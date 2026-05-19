@@ -49,7 +49,7 @@ resource "aws_iam_policy" "ssm_ansible_execution" {
 
 resource "aws_iam_role_policy_attachment" "ssm_ansible" {
   role = aws_iam_role.ec2_assume_role.name
-  policy_arn = aws_iam_role_policy.ssm_ansible_execution.arn
+  policy_arn = aws_iam_policy.ssm_ansible_execution.arn
 }
 
 # --- INSTANCE PROFILE ---
