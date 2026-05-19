@@ -1,3 +1,4 @@
+---
 - name: Atualizar cache de pacotes
   ansible.builtin.apt:
     update_cache: yes
@@ -38,6 +39,22 @@
   ansible.builtin.file:
     path: /opt/myapp
     state: directory
-    owner: "{{ ansible_become_user }}"
-    group: "{{ ansible_become_user }}"
+    owner: ubuntu
+    group: ubuntu
     mode: '0755'
+
+- name: Garantir que o grupo docker existe
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Adicionar o usuário ubuntu ao grupo docker
+  ansible.builtin.user:
+    name: ubuntu
+    groups: docker
+    append: yes
+
+- name: Forçar o reinício do serviço do Docker para aplicar as permissões do grupo
+  ansible.builtin.systemd_service:
+    name: docker
+    state: restarted
