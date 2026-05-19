@@ -28,9 +28,9 @@ resource "aws_iam_role_policy_attachment" "ecr" {
 
 # --- POLÍTICA INLINE CUSTOMIZADA PARA O ANSIBLE/PIPELINE ---
 
-resource "aws_iam_role_policy" "ssm_ansible_execution" {
-  name = "ssm_ansible_execution"
-  role = aws_iam_role.ec2_assume_role.id
+resource "aws_iam_policy" "ssm_ansible_execution" {
+  name        = "ssm_ansible_execution_policy"
+  description = "Politica gerenciada para permitir execucao do Ansible via SSM"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -45,6 +45,11 @@ resource "aws_iam_role_policy" "ssm_ansible_execution" {
         Resource = "*"
     }]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_ansible" {
+  role = aws_iam_role.ec2_assume_role.name
+  policy_arn = aws_iam_role_policy.ssm_ansible_execution.arn
 }
 
 # --- INSTANCE PROFILE ---
