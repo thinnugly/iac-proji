@@ -2,6 +2,8 @@ module "iam" {
   source               = "../../modules/iam"
   role                 = var.role
   iam_instance_profile = var.iam_instance_profile
+  ansible_policy = var.ansible_policy
+  s3_policy = var.s3_policy
 }
 
 module "security_group" {
