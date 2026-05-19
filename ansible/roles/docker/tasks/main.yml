@@ -1,0 +1,43 @@
+- name: Atualizar cache de pacotes
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Instalar dependências necessárias
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: present
+
+- name: Adicionar chave GPG oficial do Docker
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Adicionar repositório Docker
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+    state: present
+
+- name: Atualizar cache novamente
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Instalar Docker Engine e Docker Compose plugin
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin
+    state: present
+
+- name: Criar diretório da aplicação
+  ansible.builtin.file:
+    path: /opt/myapp
+    state: directory
+    owner: "{{ ansible_become_user }}"
+    group: "{{ ansible_become_user }}"
+    mode: '0755'

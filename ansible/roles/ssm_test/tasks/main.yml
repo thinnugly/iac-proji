@@ -1,0 +1,5 @@
+- name: Criar pasta de teste de SSM
+  command: mkdir -p /tmp/ansible_ssm_role_test
+
+- name: Criar ficheiro de Confirmacao
+  shell: echo "SSM ROLE OK" > /tmp/ansible_ssm_role_test/status.txt
