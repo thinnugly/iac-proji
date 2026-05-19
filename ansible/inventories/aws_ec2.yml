@@ -1,14 +1,13 @@
 plugin: amazon.aws.aws_ec2
-
 regions:
   - us-east-1
 
-filters:
-  instance-state-name: running
-
-hostnames:
-  - instance-id
+# Organiza os grupos automaticamente usando as tags da AWS sem quebrar o Ansible
+keyed_groups:
+  - key: tags
+    prefix: tag
 
 compose:
-  ansible_connection: "'amazon.aws.aws_ssm'"
-  ansible_aws_ssm_region: "'us-east-1'"
+  ansible_connection: "amazon.aws.aws_ssm"
+  ansible_aws_ssm_region: "us-east-1"
+  ansible_user: "'root'"
